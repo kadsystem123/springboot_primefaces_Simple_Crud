@@ -62,9 +62,13 @@ body .ui-paginator .ui-paginator-pages .ui-paginator-page {
 		<div class="row">
 			<div class="col-12">
 				<div class="card shadow-sm">
-					<div class="card-header bg-primary text-white">
+					<div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
 						<h5 class="mb-0">Projet CRUD Player Simple SpringBoot +
 							Primefaces with CSS Bootstrap</h5>
+						<div>
+							<h:outputLink value="login.xhtml" styleClass="btn btn-light btn-sm rounded-pill me-2">تسجيل الدخول</h:outputLink>
+							<h:outputLink value="register.xhtml" styleClass="btn btn-outline-light btn-sm rounded-pill">إنشاء حساب</h:outputLink>
+						</div>
 					</div>
 					<div class="card-body">
 						<h:form id="forminsert">
