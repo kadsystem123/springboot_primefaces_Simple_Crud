@@ -26,12 +26,15 @@ public class EmployeeController {
 	
 	
 	
+	
 	@GetMapping("/listemployees")
 	public List<Employee> getAllEmployees(){
 		    System.out.println(employeeRepository.count());
 			return employeeRepository.findAll();
 		
 	}
+	
+	
 	
 	
 	
