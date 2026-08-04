@@ -16,13 +16,15 @@ public class AuditFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
-		String uri = request.getRequestURI();
-	    // استثناء الصفحة الرئيسية من معالجة معينة (إن وجدت)
-	    if (!uri.endsWith("/index.xhtml")) {
-	        // قم بتنفيذ منطق الفلتر هنا
-	    }
-	    filterChain.doFilter(request, response);
-		
-	}
-
+String uri = request.getRequestURI();
+        
+        // الشرح: نفذ المنطق فقط إذا لم تكن الصفحة login ولم تكن register
+        boolean isLoginPage = uri.endsWith("/login.xhtml");
+        boolean isRegisterPage = uri.endsWith("/register.xhtml");
+        if (!isLoginPage && !isRegisterPage) {
+            // هنا ضع منطق التدقيق (Audit) الخاص بك
+        }  
+        // متابعة الفلاتر التالية في السلسلة
+        filterChain.doFilter(request, response);
+    }	
 }

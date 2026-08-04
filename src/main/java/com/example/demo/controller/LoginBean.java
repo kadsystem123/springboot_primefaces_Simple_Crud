@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.model.User;
@@ -15,12 +18,14 @@ import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpSession;
+
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
  * Managed Bean لصفحة login.xhtml.
- * يستدعي AuthenticationManager مباشرة، يولّد JWT عبر JwtUtil،
- * ويخزّنه في الجلسة (session) ليُستخدم من الواجهة أو كعرض للتوكن.
+ * يستدعي AuthenticationManager، يخزن المصادقة في Spring Security Context للـ Session،
+ * ويولّد JWT لاستخدامه في طلبات API.
  */
 @Component
 @Named("loginBean")
@@ -44,23 +49,37 @@ public class LoginBean implements Serializable {
 
 	public void login() {
 		try {
-			authenticationManager.authenticate(
+			// 1. إجراء المصادقة واسترجاع كائن Authentication المكتمل
+			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(username, password));
 
 			User user = userRepository.findByUsername(username)
 					.orElseThrow(() -> new BadCredentialsException("مستخدم غير موجود"));
 
+			// 2. توليد توكن JWT
 			token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
 
-			// تخزين التوكن والدور في الجلسة لاستخدامهما في الواجهة
+			// 3. وضع المصادقة في SecurityContext الخاص بـ Spring Security
+			SecurityContext securityContext = SecurityContextHolder.getContext();
+			securityContext.setAuthentication(authentication);
+
+			// 4. الحصول على الجلسة وحفظ الـ SecurityContext والتوكن فيها
 			HttpSession session = (HttpSession) FacesContext.getCurrentInstance()
 					.getExternalContext().getSession(true);
+			
+			// السطر الأساسي الذي يحل المشكلة: الربط مع Spring Security
+			session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+
+			// حفظ بيانات إضافية لاستخدامها في واجهة JSF إن أردت
 			session.setAttribute("JWT_TOKEN", token);
 			session.setAttribute("USER_ROLE", user.getRole().name());
 			session.setAttribute("USERNAME", user.getUsername());
 
-			FacesContext.getCurrentInstance().addMessage("growl",
-					new FacesMessage(FacesMessage.SEVERITY_INFO, "نجاح", "تم تسجيل الدخول بنجاح"));
+			// 5. إعادة التوجيه الفوري لصفحة index.xhtml
+			FacesContext.getCurrentInstance()
+					.getExternalContext()
+					.redirect("index.xhtml");
+
 		} catch (BadCredentialsException e) {
 			FacesContext.getCurrentInstance().addMessage("growl",
 					new FacesMessage(FacesMessage.SEVERITY_ERROR, "خطأ", "اسم المستخدم أو كلمة المرور غير صحيحة"));
@@ -70,13 +89,21 @@ public class LoginBean implements Serializable {
 		}
 	}
 
-	public void logout() {
+	public void logout() throws IOException {
+		// تفريغ سياق الأمان الخاص بـ Spring Security
+		SecurityContextHolder.clearContext();
+
 		HttpSession session = (HttpSession) FacesContext.getCurrentInstance()
 				.getExternalContext().getSession(false);
 		if (session != null) {
-			session.invalidate();
+			session.invalidate();		
 		}
 		token = null;
+
+		// إعادة التوجيه لصفحة الدخول بعد الخروج
+		FacesContext.getCurrentInstance()
+				.getExternalContext()
+				.redirect("login.xhtml");
 	}
 
 	public String getUsername() {

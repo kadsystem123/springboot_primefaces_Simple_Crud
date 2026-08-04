@@ -66,12 +66,12 @@ body .ui-paginator .ui-paginator-pages .ui-paginator-page {
 						<h5 class="mb-0">Projet CRUD Player Simple SpringBoot +
 							Primefaces with CSS Bootstrap</h5>
 						<div>
-							<h:outputLink value="login.xhtml" styleClass="btn btn-light btn-sm rounded-pill me-2">تسجيل الدخول</h:outputLink>
+							<h:outputLink value="login.xhtml"   styleClass="btn btn-light btn-sm rounded-pill me-2">تسجيل الدخول</h:outputLink>
 							<h:outputLink value="register.xhtml" styleClass="btn btn-outline-light btn-sm rounded-pill">إنشاء حساب</h:outputLink>
 						</div>
 					</div>
 					<div class="card-body">
-						<h:form id="forminsert">
+						<h:form id="forminsert" rendered="#{session.getAttribute('USER_ROLE') eq 'ADMIN'}" >
 							<p:growl id="growl" showDetail="true" />
 							<div class="container-fluid py-4">
 								<div class="row justify-content-center">

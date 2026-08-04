@@ -18,86 +18,78 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.example.demo.security.AppUserDetailsService;
 import com.example.demo.security.JwtAuthFilter;
 
-/**
- * تهيئة الحماية:
- * - صفحات PrimeFaces (index/login/register) عامة بدون مصادقة.
- * - API التسجيل والدخول (/api/auth/**) عامة.
- * - باقي API الموظفين (/api/v1/**) محمية بواسطة JWT وتسيير الصلاحيات حسب الدور:
- *      GET  متاح لـ ADMIN و USER
- *      POST/DELETE متاح لـ ADMIN فقط
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-	private final JwtAuthFilter jwtAuthFilter;
-	private final AppUserDetailsService userDetailsService;
+    private final JwtAuthFilter jwtAuthFilter;
+    private final AppUserDetailsService userDetailsService;
 
-	public SecurityConfig(JwtAuthFilter jwtAuthFilter, AppUserDetailsService userDetailsService) {
-		this.jwtAuthFilter = jwtAuthFilter;
-		this.userDetailsService = userDetailsService;
-	}
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, AppUserDetailsService userDetailsService) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.userDetailsService = userDetailsService;
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	public AuthenticationManager authenticationManager() {
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(userDetailsService);
-		provider.setPasswordEncoder(passwordEncoder());
-		return new ProviderManager(provider);
-	}
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return new ProviderManager(provider);
+    }
 
-	@Bean
-	SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-		http.authorizeHttpRequests(authRequest -> {
-			// 1. صفحات JSF/PrimeFaces والموارد العامة بدون مصادقة
-			authRequest.requestMatchers(
-					"/index", "/index.xhtml",
-					"/login", "/login.xhtml",
-					"/register", "/register.xhtml",
-					"/resources/**", "/javax.faces.resource/**",
-					"/img/**", "/css/**", "/js/**").permitAll();
+    @Bean
+    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(authRequest -> {
+            // 1. صفحات JSF والموارد العامة
+            authRequest.requestMatchers(        
+                    "/", "/login", "/login.xhtml",
+                    "/register", "/register.xhtml",
+                    "/resources/**", "/javax.faces.resource/**", "/jakarta.faces.resource/**",
+                    "/img/**", "/css/**", "/js/**").permitAll();
 
-			// 2. API التسجيل وتسجيل الدخول عامة (لا تتطلب توكن)
-			authRequest.requestMatchers("/api/auth/**").permitAll();
+            // 2. API التسجيل والدخول
+            authRequest.requestMatchers("/api/auth/**").permitAll();
+            
+            // 3. حماية صفحة index.xhtml حسب الأدوار
+            authRequest.requestMatchers("/index.xhtml").hasAnyRole("ADMIN","USER");
 
-			// 3. تسيير الصلاحيات على API الموظفين حسب الدور المستخرج من JWT
-			// ملاحظة: القاعدة الأكثر تحديداً (supprime) يجب أن تُوضع قبل القاعدة العامة لـ GET
-			authRequest.requestMatchers("/api/v1/supprime/**").hasRole("ADMIN");
-			authRequest.requestMatchers(HttpMethod.GET, "/api/v1/**")
-					.hasAnyRole("ADMIN", "USER");
-			authRequest.requestMatchers(HttpMethod.POST, "/api/v1/**")
-					.hasRole("ADMIN");
-			authRequest.requestMatchers(HttpMethod.DELETE, "/api/v1/**")
-					.hasRole("ADMIN");
+            // 4. API الموظفين
+            authRequest.requestMatchers("/api/v1/supprime/**").hasRole("ADMIN");
+            authRequest.requestMatchers("/api/v1/listemployees").hasRole("ADMIN");
+            authRequest.requestMatchers(HttpMethod.POST, "/api/v1/**").hasRole("ADMIN");
+            authRequest.requestMatchers(HttpMethod.DELETE, "/api/v1/**").hasRole("ADMIN");
 
-			// 4. أي طلب آخر يتطلب مصادقة
-			authRequest.anyRequest().authenticated();
-		});
+            // 5. أي طلب آخر يتطلب مصادقة
+            authRequest.anyRequest().authenticated();
+        });
 
-		// جلسة بدون حالة (Stateless) لأن الاعتماد كليًا على JWT لواجهات API
-		http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+        // السماح بإنشاء الجلسة لدعم صفحات JSF/PrimeFaces
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
-		// تفعيل نموذج تسجيل الدخول الافتراضي (يبقى مفيداً لصفحات JSF نفسها إن استُخدم)
-		http.formLogin(form -> form.disable());
-		http.httpBasic(basic -> basic.disable());
+        http.formLogin(form -> form.disable());
+        http.httpBasic(basic -> basic.disable());
 
-		// تعطيل CSRF لمشاكل PrimeFaces (AJAX) وواجهات REST المعتمدة على التوكن
-		http.csrf(csrf -> csrf.disable());
+        // فلتر JWT لطلبات API
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-		// إضافة فلتر JWT قبل فلتر المصادقة الافتراضي
-		http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        // تعطيل CSRF لحرية حركة AJAX في PrimeFaces و REST
+        http.csrf(csrf -> csrf.disable());
+                
+        return http.build();
+    }
 
-		return http.build();
-	}
-
-	// استثناء موارد PrimeFaces من الأمان بالكامل
-	@Bean
-	public WebSecurityCustomizer webSecurityCustomizer() {
-		return (web) -> web.ignoring().requestMatchers("/javax.faces.resource/**");
-	}
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers(
+            "/javax.faces.resource/**",
+            "/jakarta.faces.resource/**",
+            "/resources/**"
+        );
+    }
 }
