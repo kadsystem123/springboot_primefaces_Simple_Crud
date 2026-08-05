@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>إنشاء حساب</title>
+	<h:outputStylesheet library="webjars"
+		name="bootstrap/5.3.8/css/bootstrap.min.css" />
+</h:head>
+<h:body>
+	<style>
+		body {
+			background: linear-gradient(135deg, #0d6efd, #0a58ca);
+			min-height: 100vh;
+		}
+		.auth-card {
+			max-width: 460px;
+			margin: 6vh auto;
+			border-radius: 1.25rem;
+			overflow: hidden;
+		}
+		.btn-gradient-success {
+			background: linear-gradient(135deg, #198754, #157347) !important;
+			color: white !important;
+			border: none;
+		}
+	</style>
+
+	<div class="auth-card card shadow-lg border-0">
+		<div class="card-header bg-primary text-white text-center py-3">
+			<h4 class="mb-0">📝 إنشاء حساب جديد</h4>
+		</div>
+		<div class="card-body p-4" style="background:#f9fcff;">
+
+			<h:form id="registerForm">
+				<p:growl id="growl" showDetail="true" />
+
+				<div class="mb-3">
+					<p:outputLabel for="username" value="اسم المستخدم"
+						styleClass="fw-semibold text-secondary small" />
+					<p:inputText id="username"
+						class="form-control form-control-lg rounded-3"
+						value="#{registerBean.username}" required="true"
+						requiredMessage="اسم المستخدم مطلوب" />
+				</div>
+
+				<div class="mb-3">
+					<p:outputLabel for="email" value="البريد الإلكتروني"
+						styleClass="fw-semibold text-secondary small" />
+					<p:inputText id="email"
+						class="form-control form-control-lg rounded-3"
+						value="#{registerBean.email}" />
+				</div>
+
+				<div class="mb-3">
+					<p:outputLabel for="password" value="كلمة المرور"
+						styleClass="fw-semibold text-secondary small" />
+					<p:password id="password"
+						class="form-control form-control-lg rounded-3"
+						value="#{registerBean.password}" required="true"
+						requiredMessage="كلمة المرور مطلوبة" feedback="false" />
+				</div>
+
+				<div class="mb-3">
+					<p:outputLabel for="confirmPassword" value="تأكيد كلمة المرور"
+						styleClass="fw-semibold text-secondary small" />
+					<p:password id="confirmPassword"
+						class="form-control form-control-lg rounded-3"
+						value="#{registerBean.confirmPassword}" required="true"
+						requiredMessage="تأكيد كلمة المرور مطلوب" feedback="false" />
+				</div>
+
+				<div class="d-grid mt-4">
+					<p:commandButton value="إنشاء الحساب"
+						styleClass="btn btn-gradient-success btn-lg rounded-pill"
+						actionListener="#{registerBean.register()}" update="registerForm" />
+				</div>
+
+				<div class="text-center mt-3">
+					<h:outputText value="لديك حساب بالفعل؟ " />
+					<h:outputLink value="login.xhtml">تسجيل الدخول</h:outputLink>
+				</div>
+
+				<h:panelGroup rendered="#{not empty registerBean.token}">
+					<hr />
+					<p class="small text-muted mb-1">JWT Token:</p>
+					<div class="p-2 bg-light rounded-3 small text-break" style="word-break: break-all;">
+						<h:outputText value="#{registerBean.token}" />
+					</div>
+				</h:panelGroup>
+			</h:form>
+		</div>
+	</div>
+</h:body>
+</html>

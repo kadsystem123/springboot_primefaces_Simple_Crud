@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,6 +18,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.example.demo.security.AppUserDetailsService;
 import com.example.demo.security.JwtAuthFilter;
+
+import jakarta.faces.webapp.FacesServlet;
+import jakarta.servlet.DispatcherType;
 
 @Configuration
 @EnableWebSecurity
@@ -42,13 +46,24 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(provider);
     }
+    
+    @Bean
+    public ServletRegistrationBean<FacesServlet> facesServletRegistration() {
+        ServletRegistrationBean<FacesServlet> registration = new ServletRegistrationBean<>(new FacesServlet(), "*.xhtml");
+        registration.setLoadOnStartup(1);
+        return registration;
+    }
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authRequest -> {
+            
+            // 💡 مهم جداً لـ JSF: السماح بالتوجيه الداخلي (FORWARD) والموارد الخاصة بـ JSF
+            authRequest.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll();
+
             // 1. صفحات JSF والموارد العامة
             authRequest.requestMatchers(        
-                    "/", "/login", "/login.xhtml",
+                    "/login", "/login.xhtml",
                     "/register", "/register.xhtml",
                     "/resources/**", "/javax.faces.resource/**", "/jakarta.faces.resource/**",
                     "/img/**", "/css/**", "/js/**").permitAll();
@@ -56,8 +71,7 @@ public class SecurityConfig {
             // 2. API التسجيل والدخول
             authRequest.requestMatchers("/api/auth/**").permitAll();
             
-            // 3. حماية صفحة index.xhtml حسب الأدوار
-            authRequest.requestMatchers("/index.xhtml").hasAnyRole("ADMIN","USER");
+           
 
             // 4. API الموظفين
             authRequest.requestMatchers("/api/v1/supprime/**").hasRole("ADMIN");

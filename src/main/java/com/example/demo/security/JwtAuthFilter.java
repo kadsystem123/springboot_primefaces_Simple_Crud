@@ -33,6 +33,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 	@Autowired
 	private AppUserDetailsService userDetailsService;
 
+	
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+	    String path = request.getRequestURI();
+	    // عدم تطبيق الفلتر على صفحات XHTML والموارد العامة
+	    return path.endsWith(".xhtml") || path.startsWith("/jakarta.faces.resource") || path.startsWith("/api/auth");
+	}
+	
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request,
 			@NonNull HttpServletResponse response,

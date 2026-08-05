@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>PrimeFaces Demo</title>
+	<h:outputStylesheet library="webjars"
+		name="bootstrap/5.3.8/css/bootstrap.min.css" />
+	<h:outputScript library="webjars"
+		name="bootstrap/5.3.8/js/bootstrap.bundle.min.js" />
+	 <link rel="shortcut icon" type="image/x-icon" 
+	 href="#{request.contextPath}/img/icon_player.ico" />
+</h:head>
+<h:body>
+	<style>
+body .ui-paginator .ui-paginator-pages .ui-paginator-page {
+	border-radius: 30px;
+}
+
+.bg-gradient-primary {
+	background: linear-gradient(135deg, #0d6efd, #0a58ca) !important;
+}
+
+.bg-gradient-success {
+	background: linear-gradient(135deg, #198754, #157347) !important;
+	border: none;
+	color: white;
+}
+
+.bg-gradient-info {
+	background: linear-gradient(135deg, #0dcaf0, #0aa2c0) !important;
+}
+
+.btn-gradient-success:hover {
+	transform: scale(1.02);
+	transition: 0.2s;
+}
+
+.bg-gradient-primary {
+	background: linear-gradient(135deg, #0d6efd, #0a58ca) !important;
+}
+
+.btn-gradient-success {
+	background: linear-gradient(135deg, #198754, #157347) !important;
+	color: white !important;
+	transition: 0.3s ease;
+}
+
+.btn-gradient-success:hover {
+	transform: scale(1.02);
+	box-shadow: 0 0.5rem 1rem rgba(25, 135, 84, 0.3) !important;
+}
+
+.form-control:focus {
+	border-color: #0d6efd;
+	box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+</style>
+	<div class="container-fluid mt-4">
+		<div class="row">
+			<div class="col-12">
+				<div class="card shadow-sm">
+					<div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+						<h5 class="mb-0">Projet CRUD Player Simple SpringBoot +
+							Primefaces with CSS Bootstrap</h5>
+						<div>
+							<h:outputLink value="login.xhtml"   styleClass="btn btn-light btn-sm rounded-pill me-2">تسجيل الدخول</h:outputLink>
+							<h:outputLink value="register.xhtml" styleClass="btn btn-outline-light btn-sm rounded-pill">إنشاء حساب</h:outputLink>
+						</div>
+					</div>
+					<div class="card-body">
+						<h:form id="forminsert" rendered="#{session.getAttribute('USER_ROLE') eq 'ADMIN'}" >
+							<p:growl id="growl" showDetail="true" />
+							<div class="container-fluid py-4">
+								<div class="row justify-content-center">
+									<div class="col-lg-8 col-md-10 col-sm-12">
+
+										<div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+
+											<div
+												class="card-header bg-gradient-primary text-white fw-bold fs-5 d-flex align-items-center">
+												<i class="bi bi-person-plus fs-3 me-2"></i> Nouveau Joueur
+											</div>
+
+											<div class="card-body p-4" style="background: #f9fcff;">
+
+												<div class="row g-3 align-items-end mb-3">
+													<div class="col-md-6">
+														<p:outputLabel for="NOM" value="👤 NOM"
+															styleClass="fw-semibold text-secondary small" />
+														<p:inputText id="NOM"
+															class="form-control form-control-lg rounded-3 border-0 shadow-sm"
+															required="true" requiredMessage="nom obligatoire."
+															value="#{beanindex.newEmployee.nom}" placeholder="NOM" />
+														<small class="text-muted">nom obligatoire</small>
+													</div>
+													<div class="col-md-6">
+														<p:outputLabel for="PRENOM" value="🧑‍💼 PRENOM"
+															styleClass="fw-semibold text-secondary small" />
+														<p:inputText id="PRENOM"
+															class="form-control form-control-lg rounded-3 border-0 shadow-sm"
+															required="true" requiredMessage="prenom obligatoire."
+															value="#{beanindex.newEmployee.prenom}"
+															placeholder="prenom" />
+														<small class="text-muted">prenom obligatoire</small>
+													</div>
+												</div>
+
+
+												<div class="row g-3 mb-4">
+													<div class="col-12">
+														<p:outputLabel for="mail" value="📧 EMAIL"
+															styleClass="fw-semibold text-secondary small" />
+														<p:inputText id="mail"
+															class="form-control form-control-lg rounded-3 border-0 shadow-sm"
+															required="true" requiredMessage="email obligatoire."
+															value="#{beanindex.newEmployee.emailId}"
+															placeholder="example@domain.com" />
+														<small class="text-muted">saisie email</small>
+													</div>
+												</div>
+
+
+												<div class="row mt-4">
+													<div class="col-12 d-flex justify-content-end">
+														<p:commandButton value="➕ Ajouter"
+															styleClass="btn btn-gradient-success btn-lg rounded-pill px-5 shadow-sm border-0"
+															actionListener="#{beanindex.insert()}"
+															update="forminsert form:table ">
+															<i class="bi bi-check-circle-fill me-1"></i>
+														</p:commandButton>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</h:form>
+					</div>
+
+
+
+					<h:form id="form" styleClass="container-sm">
+						<p:growl id="growl" showDetail="true" />
+						<p:dataTable value="#{beanindex.lista}" var="item" id="table" 
+						rowsPerPageTemplate="1,3,5,10,15"
+							styleClass="table table-hover table-borderless align-middle shadow-lg rounded-4 overflow-hidden font-monospace"
+							paginator="true" rows="3" rowKey="#{item.nom}">
+
+
+							<p:column style="width:3rem; text-align:center;">
+								<p:rowToggler
+									styleClass="btn btn-sm btn-outline-secondary rounded-circle p-1"
+									icon="pi pi-plus-circle" expandedIcon="pi pi-minus-circle" />
+							</p:column>
+
+
+							<p:column headerText="👤 NOM"
+								headerStyleClass="bg-gradient-primary text-white fw-bold border-0"
+								style="vertical-align:middle; background-color: #f8faff;">
+								<h:outputText value="N° : #{item.id}- #{item.nom}"
+									styleClass="fw-semibold text-dark" />
+							</p:column>
+
+
+							<p:column headerText="🗑️ SUPPRIMER"
+								headerStyleClass="bg-gradient-primary text-white fw-bold border-0"
+								style="text-align:center; vertical-align:middle;">
+								<p:commandButton value="" action="#{beanindex.delete()}"
+									process="@this" update="form:table"
+									styleClass="btn btn-outline-danger btn-sm rounded-pill px-3 py-1"
+									icon="pi pi-trash" iconPos="left">
+									<f:setPropertyActionListener value="#{item}"
+										target="#{beanindex.selectEmployee}" />
+									<p:tooltip value="supprimer enregistrement" />
+								</p:commandButton>
+							</p:column>
+
+							<p:column headerText="📅 EMAIL"
+								headerStyleClass="bg-gradient-primary text-white fw-bold border-0"
+								style="vertical-align:middle;">
+								<h:outputText value="#{item.emailId}"
+									styleClass="text-secondary small" />
+							</p:column>
+
+							<p:rowExpansion>
+								<div
+									class="row g-0 bg-light rounded-4 shadow-sm overflow-hidden my-2">
+									<div
+										class="col-md-2 d-flex align-items-center justify-content-center bg-gradient-info text-white p-3">
+										<i class="bi bi-person-circle fs-1"></i>
+									</div>
+									<div class="col-md-10 p-4">
+										<h5 class="fw-bold text-primary">
+											<i class="bi bi-person-badge me-2"></i>#{item.nom}
+											#{item.prenom}
+										</h5>
+										<div class="row mt-2">
+											<div class="col-md-6">
+												<span class="badge bg-secondary me-1">📧</span> <span
+													class="text-muted">#{item.emailId}</span>
+											</div>
+										</div>
+										<hr class="my-2" />
+										<p:commandButton process="@this" value="✏️ Modifier"
+											update=":form:diag" oncomplete="PF('customerDialog').show()"
+											styleClass="btn btn-gradient-success rounded-pill px-4 shadow-sm">
+											<f:setPropertyActionListener value="#{item}"
+												target="#{beanindex.selectEmployee}" />
+										</p:commandButton>
+									</div>
+								</div>
+							</p:rowExpansion>
+
+						</p:dataTable>
+						<p:dialog
+							header="#{beanindex.selectEmployee.nom} #{beanindex.selectEmployee.prenom}"
+							id="diag" widgetVar="customerDialog" modal="true"
+							showEffect="fade" hideEffect="fade" resizable="false">
+							<div class="row">
+								<div class="row g-3">
+									<p:inputText value="#{beanindex.selectEmployee.nom}" />
+								</div>
+								<div class="row g-3">
+									<p:inputText value="#{beanindex.selectEmployee.prenom}" />
+								</div>
+								<div class="row g-3">
+									<p:inputText value="#{beanindex.selectEmployee.emailId}" />
+								</div>
+								<p:spacer width="20" height="20" />
+								<p:commandButton actionListener="#{beanindex.updating()}"
+									styleClass="font-monospace" value="Enregistrer"
+									icon="pi pi-save" update=":form">
+								</p:commandButton>
+							</div>
+						</p:dialog>
+					</h:form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</h:body>
+</html>
