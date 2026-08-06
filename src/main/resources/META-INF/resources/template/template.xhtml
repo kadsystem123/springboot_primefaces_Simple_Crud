@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	lang="#{languageBean.language}" dir="#{languageBean.dir}">
+
+<f:view locale="#{languageBean.locale}">
+
+<h:head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title><ui:insert name="title"><h:outputText value="#{msg['app.title']}" /></ui:insert></title>
+
+	<!-- Bootstrap 5 CSS -->
+	<h:outputStylesheet library="webjars" name="bootstrap/5.3.8/css/bootstrap.min.css" />
+	
+	<!-- Bootstrap Icons -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+	<!-- Favicon -->
+	<link rel="shortcut icon" type="image/x-icon" href="#{request.contextPath}/img/icon_player.ico" />
+
+	<style>
+		body {
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			background-color: #f4f6f9;
+			font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+		}
+
+		/* الهيكل العام للموقع */
+		.app-wrapper {
+			display: flex;
+			flex: 1;
+			overflow-x: hidden;
+			position: relative;
+		}
+
+		/* تصميم القائمة الجانبية (Sidebar) */
+		#sidebar {
+			min-width: 260px;
+			max-width: 260px;
+			background: linear-gradient(180deg, #1e293b, #0f172a);
+			color: #fff;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			z-index: 1000;
+		}
+
+		/* إخفاء السايدبار حسب اتجاه الصفحة */
+		html[dir="rtl"] #sidebar.collapsed {
+			margin-right: -260px;
+			margin-left: 0;
+		}
+
+		html[dir="ltr"] #sidebar.collapsed {
+			margin-left: -260px;
+			margin-right: 0;
+		}
+
+		#sidebar .nav-link {
+			color: #cbd5e1;
+			padding: 0.75rem 1rem;
+			border-radius: 0.5rem;
+			margin-bottom: 0.3rem;
+			transition: background 0.2s;
+			display: flex;
+			align-items: center;
+		}
+
+		#sidebar .nav-link:hover, #sidebar .nav-link.active {
+			color: #fff;
+			background-color: #0d6efd;
+		}
+
+		/* منطقة المحتوى الرئيسي */
+		#content {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			width: 100%;
+			min-width: 0;
+		}
+
+		/* الفوتر */
+		footer {
+			background-color: #ffffff;
+			border-top: 1px solid #e2e8f0;
+		}
+
+		/* ضبط تموضع القوائم المنسدلة بدقة في RTL و LTR */
+		.dropdown-menu-custom {
+			position: absolute !important;
+			top: 100% !important;
+			z-index: 1060 !important;
+		}
+
+		html[dir="rtl"] .dropdown-menu-custom {
+			left: 0 !important;
+			right: auto !important;
+		}
+
+		html[dir="ltr"] .dropdown-menu-custom {
+			right: 0 !important;
+			left: auto !important;
+		}
+	</style>
+</h:head>
+
+<h:body>
+
+	<!-- 1. الهيدر العلوي (Navbar) -->
+	<nav class="navbar navbar-dark bg-primary shadow-sm px-3 py-2">
+		<div class="container-fluid d-flex align-items-center justify-content-between p-0">
+			
+			<!-- الجزء الأول: زر السايدبار + عنوان التطبيق -->
+			<div class="d-flex align-items-center gap-2">
+				<button class="btn btn-outline-light border-0 p-1" type="button" onclick="toggleSidebar()" aria-label="Toggle Navigation">
+					<i class="bi bi-list fs-3"></i>
+				</button>
+
+				<a class="navbar-brand fw-bold m-0 d-flex align-items-center gap-2" href="#">
+					<span>🚀</span>
+					<span><h:outputText value="#{msg['app.title']}" /></span>
+				</a>
+			</div>
+
+			<!-- الجزء الثاني: أدوات الهيدر (اختيار اللغة + قائمة البروفايل) -->
+			<div class="d-flex align-items-center gap-2 gap-md-3">
+				
+				<!-- 1. قائمة اختيار اللغة -->
+				<h:form id="langForm" class="m-0">
+					<div class="dropdown position-relative">
+						<button class="btn btn-outline-light btn-sm rounded-pill px-3 dropdown-toggle d-flex align-items-center gap-1" 
+						        type="button" id="langDropdown" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+							<i class="bi bi-translate"></i>
+							<span><h:outputText value="#{languageBean.language.toUpperCase()}" /></span>
+						</button>
+						<ul class="dropdown-menu dropdown-menu-custom shadow border-0 mt-2 rounded-3" aria-labelledby="langDropdown">
+							<li>
+								<h:commandLink action="#{languageBean.changeLanguage('ar')}" class="dropdown-item py-2 d-flex align-items-center justify-content-between">
+									<span>🇩🇿 العربية</span>
+									<h:panelGroup rendered="#{languageBean.language eq 'ar'}"><i class="bi bi-check-lg text-primary ms-2 me-2"></i></h:panelGroup>
+								</h:commandLink>
+							</li>
+							<li>
+								<h:commandLink action="#{languageBean.changeLanguage('en')}" class="dropdown-item py-2 d-flex align-items-center justify-content-between">
+									<span>🇬🇧 English</span>
+									<h:panelGroup rendered="#{languageBean.language eq 'en'}"><i class="bi bi-check-lg text-primary ms-2 me-2"></i></h:panelGroup>
+								</h:commandLink>
+							</li>
+							<li>
+								<h:commandLink action="#{languageBean.changeLanguage('fr')}" class="dropdown-item py-2 d-flex align-items-center justify-content-between">
+									<span>🇫🇷 Français</span>
+									<h:panelGroup rendered="#{languageBean.language eq 'fr'}"><i class="bi bi-check-lg text-primary ms-2 me-2"></i></h:panelGroup>
+								</h:commandLink>
+							</li>
+						</ul>
+					</div>
+				</h:form>
+
+				<!-- 2. قائمة البروفايل والأعدادات -->
+				<div class="dropdown position-relative">
+					<a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle px-2 py-1 rounded-pill" 
+					   id="userDropdown" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+						<div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style="width: 34px; height: 34px;">
+							<i class="bi bi-person-fill fs-5"></i>
+						</div>
+						<span class="fw-semibold px-2">
+							<h:outputText value="#{not empty session.getAttribute('USERNAME') ? session.getAttribute('USERNAME') : loginBean.username}" />
+						</span>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-custom shadow border-0 mt-2 rounded-3" aria-labelledby="userDropdown" style="min-width: 200px;">
+						<li class="px-3 py-2 bg-light rounded-top">
+							<span class="d-block text-muted small"><h:outputText value="#{msg['app.welcome']}" /></span>
+							<strong class="text-dark"><h:outputText value="#{not empty session.getAttribute('USERNAME') ? session.getAttribute('USERNAME') : loginBean.username}" /></strong>
+						</li>
+						<li><hr class="dropdown-divider my-1" /></li>
+						<li>
+							<a class="dropdown-item py-2 d-flex align-items-center gap-2" href="profile.xhtml">
+								<i class="bi bi-person text-primary fs-5"></i> 
+								<span><h:outputText value="#{msg['app.profile']}" /></span>
+							</a>
+						</li>
+						<li>
+							<a class="dropdown-item py-2 d-flex align-items-center gap-2" href="settings.xhtml">
+								<i class="bi bi-gear text-primary fs-5"></i> 
+								<span><h:outputText value="#{msg['app.settings']}" /></span>
+							</a>
+						</li>
+						<li><hr class="dropdown-divider my-1" /></li>
+						<li>
+							<h:form class="m-0">
+								<h:commandLink action="#{loginBean.logout()}" class="dropdown-item py-2 text-danger d-flex align-items-center gap-2">
+									<i class="bi bi-box-arrow-right fs-5"></i> 
+									<span><h:outputText value="#{msg['app.logout']}" /></span>
+								</h:commandLink>
+							</h:form>
+						</li>
+					</ul>
+				</div>
+
+			</div>
+		</div>
+	</nav>
+
+	<!-- 2. جسم الصفحة (السايد بار + المحتوى المتغير) -->
+	<div class="app-wrapper">
+		
+		<!-- القائمة الجانبية (Sidebar) -->
+		<aside id="sidebar" class="p-3 shadow-sm">
+			<div class="text-secondary small fw-bold mb-3 px-2">
+				<h:outputText value="#{msg['app.main_menu']}" />
+			</div>
+			<ul class="nav nav-pills flex-column mb-auto">
+				<li class="nav-item">
+					<a href="dashboard.xhtml" class="nav-link active gap-2">
+						<i class="bi bi-speedometer2 fs-5"></i> 
+						<span><h:outputText value="#{msg['app.dashboard']}" /></span>
+					</a>
+				</li>
+				<li>
+					<a href="users.xhtml" class="nav-link gap-2">
+						<i class="bi bi-people fs-5"></i> 
+						<span><h:outputText value="#{msg['app.users']}" /></span>
+					</a>
+				</li>
+				<li>
+					<a href="reports.xhtml" class="nav-link gap-2">
+						<i class="bi bi-file-earmark-bar-graph fs-5"></i> 
+						<span><h:outputText value="#{msg['app.reports']}" /></span>
+					</a>
+				</li>
+				<li>
+					<a href="settings.xhtml" class="nav-link gap-2">
+						<i class="bi bi-sliders fs-5"></i> 
+						<span><h:outputText value="#{msg['app.settings']}" /></span>
+					</a>
+				</li>
+			</ul>
+		</aside>
+
+		<!-- منطقة المحتوى الديناميكي -->
+		<main id="content" class="p-4">
+			<ui:insert name="content">
+				<!-- المحتوى الافتراضي يحل محله محتوى الصفحات الابن -->
+			</ui:insert>
+		</main>
+	</div>
+
+	<!-- 3. الفوتر (Footer) -->
+	<footer class="py-3 px-4 mt-auto">
+		<div class="container-fluid p-0">
+			<div class="row align-items-center text-center text-md-start gy-2">
+				<div class="col-md-4">
+					<span class="text-muted small">
+						© #{session.lastAccessedTime} <strong>اسم الشركة المسؤولة</strong>. جميع الحقوق محفوظة.
+					</span>
+				</div>
+				<div class="col-md-4 text-center">
+					<span class="badge bg-light text-secondary border px-3 py-2 rounded-pill shadow-sm">
+						📅 اليوم: <h:outputText value="#{templateBean.currentDate}" />
+					</span>
+				</div>
+				<div class="col-md-4 text-md-end">
+					<span class="text-muted small">
+						رقم النسخة: <strong class="text-primary">v1.0.0</strong>
+					</span>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<!-- Bootstrap JS Bundle -->
+	<h:outputScript library="webjars" name="bootstrap/5.3.8/js/bootstrap.bundle.min.js" />
+
+	<!-- سكريبت إخفاء/إظهار السايدبار -->
+	<script>
+		function toggleSidebar() {
+			document.getElementById('sidebar').classList.toggle('collapsed');
+		}
+	</script>
+
+</h:body>
+</f:view>
+</html>

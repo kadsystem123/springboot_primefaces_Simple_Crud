@@ -38,7 +38,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 	    String path = request.getRequestURI();
 	    // عدم تطبيق الفلتر على صفحات XHTML والموارد العامة
-	    return path.endsWith(".xhtml") || path.startsWith("/jakarta.faces.resource") || path.startsWith("/api/auth");
+	    return path.endsWith(".xhtml") 
+	            || path.contains("/jakarta.faces.resource/") 
+	            || path.contains("/javax.faces.resource/")
+	            || path.startsWith("/api/auth/");
 	}
 	
 	@Override

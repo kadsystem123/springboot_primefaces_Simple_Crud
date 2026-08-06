@@ -1,8 +1,11 @@
 package com.example.demo.controller;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.model.Employee;
@@ -29,6 +32,16 @@ public class HomeBean implements Serializable{
     
     @PostConstruct
     public void init() {
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();  
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            try {
+                // إذا لم يكن مسجلاً، قم بتوجيهه فوراً لصفحة الدخول
+                FacesContext.getCurrentInstance().getExternalContext().redirect("login.xhtml");
+                return;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     	lista = productService.findAllProducts() ;
     	newEmployee = new Employee() ;
     }

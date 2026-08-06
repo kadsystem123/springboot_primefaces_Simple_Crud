@@ -3,22 +3,34 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:p="http://primefaces.org/ui">
+	xmlns:p="http://primefaces.org/ui"
+	lang="#{languageBean.language}" dir="#{languageBean.dir}">
+
+<f:view locale="#{languageBean.locale}" transient="true">
+
 <h:head>
-	<title>تسجيل الدخول</title>
-	<h:outputStylesheet library="webjars"
-		name="bootstrap/5.3.8/css/bootstrap.min.css" />
-</h:head>
-<h:body>
-    #{session.invalidate()}
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title><h:outputText value="#{msg['app.login']}" /></title>
+
+	<!-- Bootstrap 5 CSS -->
+	<h:outputStylesheet library="webjars" name="bootstrap/5.3.8/css/bootstrap.min.css" />
+	
+	<!-- Bootstrap Icons -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
 	<style>
 		body {
 			background: linear-gradient(135deg, #0d6efd, #0a58ca);
 			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			position: relative;
 		}
 		.auth-card {
+			width: 100%;
 			max-width: 420px;
-			margin: 8vh auto;
+			margin: auto;
 			border-radius: 1.25rem;
 			overflow: hidden;
 		}
@@ -27,55 +39,130 @@
 			color: white !important;
 			border: none;
 		}
+		
+		/* موضع زر اختيار اللغة أعلى الصفحة */
+		.lang-switcher-container {
+			position: absolute;
+			top: 1.25rem;
+			z-index: 1050;
+		}
+		html[dir="rtl"] .lang-switcher-container {
+			left: 1.25rem;
+			right: auto;
+		}
+		html[dir="ltr"] .lang-switcher-container {
+			right: 1.25rem;
+			left: auto;
+		}
+
+		.dropdown-menu-custom {
+			position: absolute !important;
+			top: 100% !important;
+			z-index: 1060 !important;
+		}
+		html[dir="rtl"] .dropdown-menu-custom {
+			left: 0 !important;
+			right: auto !important;
+		}
+		html[dir="ltr"] .dropdown-menu-custom {
+			right: 0 !important;
+			left: auto !important;
+		}
 	</style>
+</h:head>
 
-	<div class="auth-card card shadow-lg border-0">
-		<div class="card-header bg-primary text-white text-center py-3">
-			<h4 class="mb-0">🔐 تسجيل الدخول</h4>
-		</div>
-		<div class="card-body p-4" style="background:#f9fcff;">
+<h:body>
 
-			<h:form id="loginForm">
-				<p:growl id="growl" showDetail="true" />
+	<!-- قائمة تغيير اللغة (طافية في الأعلى) -->
+	<div class="lang-switcher-container">
+		<h:form id="langForm" class="m-0">
+			<div class="dropdown position-relative">
+				<button class="btn btn-light btn-sm rounded-pill px-3 shadow-sm dropdown-toggle d-flex align-items-center gap-2 fw-semibold" 
+				        type="button" id="langDropdown" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+					<i class="bi bi-translate text-primary fs-6"></i>
+					<span><h:outputText value="#{languageBean.language.toUpperCase()}" /></span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-custom shadow border-0 mt-2 rounded-3" aria-labelledby="langDropdown">
+					<li>
+						<h:commandLink action="#{languageBean.changeLanguage('ar')}" class="dropdown-item py-2 d-flex align-items-center justify-content-between">
+							<span>🇩🇿 العربية</span>
+							<h:panelGroup rendered="#{languageBean.language eq 'ar'}"><i class="bi bi-check-lg text-primary ms-2 me-2"></i></h:panelGroup>
+						</h:commandLink>
+					</li>
+					<li>
+						<h:commandLink action="#{languageBean.changeLanguage('en')}" class="dropdown-item py-2 d-flex align-items-center justify-content-between">
+							<span>🇬🇧 English</span>
+							<h:panelGroup rendered="#{languageBean.language eq 'en'}"><i class="bi bi-check-lg text-primary ms-2 me-2"></i></h:panelGroup>
+						</h:commandLink>
+					</li>
+					<li>
+						<h:commandLink action="#{languageBean.changeLanguage('fr')}" class="dropdown-item py-2 d-flex align-items-center justify-content-between">
+							<span>🇫🇷 Français</span>
+							<h:panelGroup rendered="#{languageBean.language eq 'fr'}"><i class="bi bi-check-lg text-primary ms-2 me-2"></i></h:panelGroup>
+						</h:commandLink>
+					</li>
+				</ul>
+			</div>
+		</h:form>
+	</div>
 
-				<div class="mb-3">
-					<p:outputLabel for="username" value="اسم المستخدم"
-						styleClass="fw-semibold text-secondary small" />
-					<p:inputText id="username"
-						class="form-control form-control-lg rounded-3"
-						value="#{loginBean.username}" required="true"
-						requiredMessage="اسم المستخدم مطلوب" />
-				</div>
+	<!-- بطاقة تسجيل الدخول -->
+	<div class="container d-flex flex-column justify-content-center flex-grow-1 py-5">
+		<div class="auth-card card shadow-lg border-0">
+			<div class="card-header bg-primary text-white text-center py-3">
+				<h4 class="mb-0">🔐 <h:outputText value="#{msg['app.login']}" /></h4>
+			</div>
+			<div class="card-body p-4" style="background:#f9fcff;">
 
-				<div class="mb-3">
-					<p:outputLabel for="password" value="كلمة المرور"
-						styleClass="fw-semibold text-secondary small" />
-					<p:password id="password"
-						class="form-control form-control-lg rounded-3"
-						value="#{loginBean.password}" required="true"
-						requiredMessage="كلمة المرور مطلوبة" feedback="false" />
-				</div>
+				<h:form id="loginForm">
+					<p:growl id="growl" showDetail="true" />
 
-				<div class="d-grid mt-4">
-					<p:commandButton value="دخول"
-						styleClass="btn btn-gradient-success btn-lg rounded-pill"
-						actionListener="#{loginBean.login()}" update="loginForm" />
-				</div>
-
-				<div class="text-center mt-3">
-					<h:outputText value="ليس لديك حساب؟ " />
-					<h:outputLink value="register.xhtml">إنشاء حساب جديد</h:outputLink>
-				</div>
-
-				<h:panelGroup rendered="#{not empty loginBean.token}">
-					<hr />
-					<p class="small text-muted mb-1">JWT Token:</p>
-					<div class="p-2 bg-light rounded-3 small text-break" style="word-break: break-all;">
-						<h:outputText value="#{loginBean.token}" />
+					<div class="mb-3">
+						<p:outputLabel for="username" value="#{msg['app.username']}"
+							styleClass="fw-semibold text-secondary small" />
+						<p:inputText id="username"
+							class="form-control form-control-lg rounded-3"
+							value="#{loginBean.username}" required="true"
+							requiredMessage="#{msg['app.username.required']}" />
 					</div>
-				</h:panelGroup>
-			</h:form>
+
+					<div class="mb-3">
+						<p:outputLabel for="password" value="#{msg['app.password']}"
+							styleClass="fw-semibold text-secondary small" />
+						<p:password id="password"
+							class="form-control form-control-lg rounded-3"
+							value="#{loginBean.password}" required="true"
+							requiredMessage="#{msg['app.password.required']}" feedback="false" />
+					</div>
+
+					<div class="d-grid mt-4">
+						<p:commandButton value="#{msg['app.login.btn']}"
+							styleClass="btn btn-gradient-success btn-lg rounded-pill"
+							actionListener="#{loginBean.login()}" update="loginForm" />
+					</div>
+
+					<div class="text-center mt-3">
+						<h:outputText value="#{msg['app.no.account']} " />
+						<h:outputLink value="register.xhtml" class="text-decoration-none fw-semibold">
+							<h:outputText value="#{msg['app.register.link']}" />
+						</h:outputLink>
+					</div>
+
+					<h:panelGroup rendered="#{not empty loginBean.token}">
+						<hr />
+						<p class="small text-muted mb-1">JWT Token:</p>
+						<div class="p-2 bg-light rounded-3 small text-break" style="word-break: break-all;">
+							<h:outputText value="#{loginBean.token}" />
+						</div>
+					</h:panelGroup>
+				</h:form>
+			</div>
 		</div>
 	</div>
+
+	<!-- Bootstrap JS Bundle -->
+	<h:outputScript library="webjars" name="bootstrap/5.3.8/js/bootstrap.bundle.min.js" />
+
 </h:body>
+</f:view>
 </html>
