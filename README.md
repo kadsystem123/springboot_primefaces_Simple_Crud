@@ -1,1 +1,5 @@
-# springboot_primefaces_Simple_Crud version 1.0.1
+# Project SpringBoot + Primefaces + Bootstrap
+# Rest api from ( "ADMIN","USER")
+# Session + Token
+# Page XHTML ( register - login - index )
+# Language ( Arab - English - Frensh )
